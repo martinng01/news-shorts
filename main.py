@@ -19,7 +19,7 @@ def generate_video(article: str, send_video_flag: bool = False):
     """
 
     script = generate_script(article, 3)
-    search_terms = generate_search_terms(script, 3)
+    search_terms = generate_search_terms(script, 6)
     voiceover = tts("en_au_001", script, TEMP_DIR)
 
     video_paths = []

@@ -95,6 +95,7 @@ def generate_search_terms(script: str, num_terms: int) -> List[str]:
     YOU MUST ONLY RETURN THE JSON-ARRAY OF STRINGS.
     YOU MUST NOT RETURN ANYTHING ELSE. 
     YOU MUST NOT RETURN THE SCRIPT.
+    DO NOT INCLUDE NAMES IN THE KEYWORDS.
     
     The search terms must be related to the subject of the video.
     Here is an example of a JSON-Array of strings:
@@ -102,7 +103,7 @@ def generate_search_terms(script: str, num_terms: int) -> List[str]:
 
     Script:
     {script}
-  """
+    """
 
     num_tries = 0
     while num_tries < MAX_TRIES:
