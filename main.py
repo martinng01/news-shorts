@@ -1,7 +1,7 @@
 from footage import *
 from gpt import *
 from voice import *
-from video import *
+from editor import *
 from bot import *
 from news import *
 
@@ -39,7 +39,7 @@ def generate_video(article: str, send_video_flag: bool = False):
     for search_term in search_terms:
         print(f"Getting footage for search term {search_term}...", end="")
         stock_footage = get_stock_footage(search_term, 1, 5)
-        if stock_footage is None:
+        if stock_footage is None or stock_footage == []:
             print(" No footage found.")
             continue
         video_path = download_footage(stock_footage[0], TEMP_DIR)
@@ -48,21 +48,21 @@ def generate_video(article: str, send_video_flag: bool = False):
         print(video_path)
         print()
 
-    # Combine and resize footage
-    print("Combining and resizing footage...", end="")
+    videos = [VideoFileClip(path) for path in video_paths]
+    resized_videos = [resize_footage(video, (1080, 1920)) for video in videos]
+
+    print("Processing videos...", end="")
     combined_video = combine_footage(
-        [resize_footage(video_path, TEMP_DIR) for video_path in video_paths], AudioFileClip(voiceover).duration, TEMP_DIR)
+        resized_videos, AudioFileClip(voiceover).duration)
+    combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     print(" Done!")
 
-    # Add audio to video
-    print("Adding audio to video...", end="")
-    final_video = add_audio(combined_video, voiceover, TEMP_DIR)
-    print(" Done!")
+    final_video_path = write_video(combined_video, TEMP_DIR)
 
     # Send video
     if send_video_flag:
         print("Sending video...", end="")
-        send_video(final_video)
+        send_video(final_video_path)
         print(" Done!")
 
 
