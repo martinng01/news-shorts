@@ -35,4 +35,6 @@ def get_article() -> str:
     article_json = next(
         filter(lambda x: x['type'] == 'article', results_json_list))
 
+    print(article_json['webUrl'])
+
     return article_json['fields']['bodyText']

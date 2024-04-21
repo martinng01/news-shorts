@@ -55,6 +55,7 @@ def generate_video(article: str, send_video_flag: bool = False):
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
+    combined_video = change_video_speed(combined_video, 1.1)
     print(" Done!")
 
     final_video_path = write_video(combined_video, TEMP_DIR)

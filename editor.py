@@ -3,6 +3,7 @@ import uuid
 from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
+from moviepy.video.fx.speedx import speedx
 
 
 def resize_footage(video: VideoFileClip, dimensions: Tuple[int, int]) -> VideoFileClip:
@@ -24,15 +25,10 @@ def resize_footage(video: VideoFileClip, dimensions: Tuple[int, int]) -> VideoFi
     else:
         res = resize(video, height=target_height)
 
-    # FIXME
     res = crop(res, x_center=res.w / 2, y_center=res.h /
                2, width=target_width, height=target_height)
 
     return res
-
-
-resize_footage(VideoFileClip(
-    'tmp/243e7810-d7ba-4f5f-848e-ebbb818e058b.mp4'), (1080, 1920))
 
 
 def combine_footage(videos: List[VideoFileClip], max_duration: int) -> VideoFileClip:
@@ -84,8 +80,17 @@ def write_video(video: VideoFileClip, path: str) -> str:
 
     return video_path
 
-# TODO Implement this function
 
+def change_video_speed(video: VideoFileClip, speed: float) -> VideoFileClip:
+    """
+    Changes the speed of the audio in a video.
 
-def change_audio_speed():
-    pass
+    Args:
+        video (VideoFileClip): The video to change the audio speed of.
+        speed (float): The speed to change the audio to.
+
+    Returns:
+        VideoFileClip: The video with the audio speed changed.
+    """
+
+    return speedx(video, speed)
