@@ -55,13 +55,14 @@ def generate_video(article: str, send_video_flag: bool = False):
         print()
 
     videos = [VideoFileClip(path) for path in video_paths]
-    resized_videos = [resize_footage(video, (1080, 1920)) for video in videos]
+    resized_videos = [resize_footage(video, (320, 480)) for video in videos]
 
     print("Processing videos...", end="")
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
-    combined_video = burn_captions(combined_video, captions)
+    combined_video = burn_captions(
+        combined_video, captions, fontsize=40, stroke_width=2)
     combined_video = change_video_speed(combined_video, 1.1)
     print(" Done!")
 

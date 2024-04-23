@@ -77,7 +77,7 @@ def write_video(video: VideoFileClip, path: str) -> str:
     """
     video_id = uuid.uuid4()
     video_path = f"{path}/{video_id}.mp4"
-    video.write_videofile(video_path, codec="mpeg4", threads=4)
+    video.write_videofile(video_path, codec="libx264", )
 
     return video_path
 
@@ -97,7 +97,7 @@ def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) 
     return speedx(video, speed)
 
 
-def burn_captions(video: VideoFileClip, captions_path: str) -> CompositeVideoClip:
+def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, stroke_width: int) -> CompositeVideoClip:
     """
     Burns captions into a video.
 
@@ -112,10 +112,10 @@ def burn_captions(video: VideoFileClip, captions_path: str) -> CompositeVideoCli
         return TextClip(
             txt,
             font="fonts/bold_font.ttf",
-            fontsize=120,
+            fontsize=fontsize,
             color='white',
             stroke_color="black",
-            stroke_width=8,
+            stroke_width=stroke_width,
         )
 
     subtitles = SubtitlesClip(captions_path, generator)
