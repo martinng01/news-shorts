@@ -4,6 +4,7 @@ from voice import *
 from editor import *
 from bot import *
 from news import *
+from captions import *
 
 TEMP_DIR = "./tmp"
 
@@ -34,6 +35,11 @@ def generate_video(article: str, send_video_flag: bool = False):
     voiceover = tts("en_au_001", script, TEMP_DIR)
     print(" Done!")
 
+    # Generate captions
+    print("Generating captions...", end="")
+    captions = generate_captions(voiceover, TEMP_DIR)
+    print(" Done!")
+
     # Get stock footage for each search term
     video_paths = []
     for search_term in search_terms:
@@ -55,6 +61,7 @@ def generate_video(article: str, send_video_flag: bool = False):
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
+    combined_video = burn_captions(combined_video, captions)
     combined_video = change_video_speed(combined_video, 1.1)
     print(" Done!")
 
@@ -70,4 +77,4 @@ def generate_video(article: str, send_video_flag: bool = False):
 if __name__ == "__main__":
     article = get_article()
 
-    generate_video(article, False)
+    generate_video(article, True)

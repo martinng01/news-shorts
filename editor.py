@@ -1,6 +1,7 @@
 from typing import List, Tuple, cast
 import uuid
-from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
+from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, concatenate_videoclips
+from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
 from moviepy.video.fx.speedx import speedx
@@ -81,7 +82,7 @@ def write_video(video: VideoFileClip, path: str) -> str:
     return video_path
 
 
-def change_video_speed(video: VideoFileClip, speed: float) -> VideoFileClip:
+def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) -> VideoFileClip:
     """
     Changes the speed of the audio in a video.
 
@@ -94,3 +95,31 @@ def change_video_speed(video: VideoFileClip, speed: float) -> VideoFileClip:
     """
 
     return speedx(video, speed)
+
+
+def burn_captions(video: VideoFileClip, captions_path: str) -> CompositeVideoClip:
+    """
+    Burns captions into a video.
+
+    Args:
+        video (VideoFileClip): The video to burn captions into.
+        captions_path (str): The captions to burn into the video.
+
+    Returns:
+        VideoFileClip: The video with the captions burned in.
+    """
+    def generator(txt) -> TextClip:
+        return TextClip(
+            txt,
+            font="fonts/bold_font.ttf",
+            fontsize=120,
+            color='white',
+            stroke_color="black",
+            stroke_width=8,
+        )
+
+    subtitles = SubtitlesClip(captions_path, generator)
+    result = CompositeVideoClip(
+        [video, subtitles.set_position(('center', 'center'))])
+
+    return result
