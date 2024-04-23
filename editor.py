@@ -77,7 +77,7 @@ def write_video(video: VideoFileClip, path: str) -> str:
     """
     video_id = uuid.uuid4()
     video_path = f"{path}/{video_id}.mp4"
-    video.write_videofile(video_path, codec="libx264", )
+    video.write_videofile(video_path, codec="libx264")
 
     return video_path
 
@@ -93,8 +93,19 @@ def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) 
     Returns:
         VideoFileClip: The video with the audio speed changed.
     """
-
     return speedx(video, speed)
+
+
+# def change_audio_speed(audio: AudioFileClip, speed: float, path: str) -> str:
+#     audio_path = f"{path}/{uuid.uuid4()}.mp4"
+#     audio.write_audiofile(audio_path, ffmpeg_params=[
+#                           "-filter_complex", "\"[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]\"", "-map", "[v]", "-map", "[a]"])
+
+#     return audio_path
+
+
+# change_audio_speed(AudioFileClip(
+#     'tmp/87c31cfc-9cc7-4f73-8ede-9fe1a2e3d72a.mp4'), 1.2, 'tmp')
 
 
 def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, stroke_width: int) -> CompositeVideoClip:

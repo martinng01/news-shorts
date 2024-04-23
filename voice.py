@@ -1,5 +1,6 @@
 # credit: https://github.com/oscie57/tiktok-voice
 
+import re
 from typing import List, Tuple
 import uuid
 from dotenv import load_dotenv
@@ -63,14 +64,16 @@ load_dotenv("./.env")
 API_BASE_URL = f"https://api16-normal-v6.tiktokv.com/media/api/text/speech/invoke/"
 USER_AGENT = f"com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)"
 TIKTOK_SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
+TIKTOK_API_CHAR_LIMIT = 250
 
 
 def tts(text_speaker: str = "en_us_002", req_text: str = "TikTok Text To Speech",
         directory: str = './tmp'):
+
     video_id = uuid.uuid4()
     video_path = f"{directory}/{video_id}.mp4"
 
-    split_text = split_string(req_text, 250)
+    split_text = split_string(req_text, TIKTOK_API_CHAR_LIMIT)
 
     b64d_arr = []
     for text in split_text:
@@ -127,7 +130,7 @@ def generate_audio(text_speaker: str = "en_us_002", req_text: str = "TikTok Text
     return (vstr, scode)
 
 
-def split_string(string: str, n: int) -> List[str]:
+def split_string_words(string: str, n: int) -> List[str]:
     """
     Splits a string into multiple strings, each with a maximum length of n characters.
 
@@ -153,6 +156,27 @@ def split_string(string: str, n: int) -> List[str]:
             current_length = len(word) + 1
     if current_word:
         result.append(current_word.strip())
+    return result
+
+
+def split_string(string: str, n: int) -> List[str]:
+    # Split a string wherever there's a whitespace character that is
+    # preceded by one of the specified punctuation marks . , ! ? ; :
+    regex = r'(?<=[.,!?;:])\s+'
+
+    split = re.split(regex, string)
+    result = []
+    for string in split:
+        if len(string) <= n:
+            result.append(string)
+            continue
+
+        # If sentence is still too long, split by words
+        split_words = split_string_words(string, n)
+        result.extend(split_words)
+
+    print(result)
+
     return result
 
 

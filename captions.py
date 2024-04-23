@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv("./.env")
 
 ASSEMBLY_AI_API_KEY = os.getenv("ASSEMBLY_AI_API_KEY")
+CHARS_PER_LINE = 20
 
 
 def generate_captions(audio_path: str, path: str) -> str:
@@ -33,6 +34,6 @@ def generate_captions(audio_path: str, path: str) -> str:
     with open(subs_path, 'w') as file:
         file.write(subtitles)
 
-    srt_equalizer.equalize_srt_file(subs_path, subs_path, 10)
+    srt_equalizer.equalize_srt_file(subs_path, subs_path, 20)
 
     return subs_path
