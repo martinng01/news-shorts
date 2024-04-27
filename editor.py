@@ -81,6 +81,8 @@ def write_video(video: VideoFileClip, path: str) -> str:
 
     return video_path
 
+# TODO Make changing video speed not change audio pitch
+
 
 def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) -> VideoFileClip:
     """

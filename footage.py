@@ -30,6 +30,8 @@ def get_stock_footage(query: str, num_videos: int, min_dur: int) -> List[str] | 
 
     qurl = f"https://api.pexels.com/videos/search?query={query}"
     r = requests.get(qurl, headers=headers)
+
+    # TODO RequestsJSONDecodeError
     response = r.json()
 
     raw_urls = []

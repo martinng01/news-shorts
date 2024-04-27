@@ -37,7 +37,7 @@ def generate_video(article: str, send_video_flag: bool = False):
 
     # Generate captions
     print("Generating captions...", end="")
-    captions = generate_captions(voiceover, TEMP_DIR)
+    captions = generate_captions(voiceover, script, TEMP_DIR)
     print(" Done!")
 
     # Get stock footage for each search term
@@ -63,7 +63,7 @@ def generate_video(article: str, send_video_flag: bool = False):
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     combined_video = burn_captions(
         combined_video, captions, fontsize=28, stroke_width=2)
-    combined_video = change_video_speed(combined_video, 1.2)
+    combined_video = change_video_speed(combined_video, 1)
     print(" Done!")
 
     final_video_path = write_video(combined_video, TEMP_DIR)
@@ -76,6 +76,6 @@ def generate_video(article: str, send_video_flag: bool = False):
 
 
 if __name__ == "__main__":
-    article = get_article()
+    article, _ = get_singapore_article()
 
-    generate_video(article, True)
+    generate_video(article, False)

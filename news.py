@@ -1,40 +1,37 @@
 import os
 from dotenv import load_dotenv
 import requests
+from newspaper import Article
+from typing import Tuple
 
 load_dotenv("./.env")
 
-THEGUARDIAN_API_KEY = os.getenv("THEGUARDIAN_API_KEY")
-API_ENDPOINT = 'http://content.guardianapis.com/search'
-params = {
-    "section": "world",
-    "order-by": "newest",
-    "page-size": 10,
-    "show-fields": "bodyText",
-    "api-key": THEGUARDIAN_API_KEY,
-}
+SG_NEWS_API_KEY = os.getenv("SG_NEWS_API_KEY")
 
 
-def get_article() -> str:
+def get_singapore_article() -> Tuple[str, str]:
     """
-    Fetches the first article from The Guardian API.
+    Fetches the first article from the top headlines in Singapore.
 
     Returns:
-    str: The article text
+    Tuple[str, str]: The article text and the top image
     """
 
-    response = requests.get(API_ENDPOINT, params)
-    if response.status_code != 200:
-        print("Error fetching articles from The Guardian")
-        print(response.text)
+    news_outlets = ["The Straits Times", "CNA", "TODAY"]
 
-    results_json_list = response.json(
-    )['response']['results']
+    response = requests.get("https://newsapi.org/v2/top-headlines", params={
+        "country": "sg", "apiKey": SG_NEWS_API_KEY})
 
-    # Get the first result labeled as an article
-    article_json = next(
-        filter(lambda x: x['type'] == 'article', results_json_list))
+    json = response.json()
 
-    print(article_json['webUrl'])
+    articles = list(
+        filter(lambda article: article["author"] in news_outlets, json["articles"]))
+    article = Article(url=articles[0]['url'])
+    article.download()
+    article.parse()
 
-    return article_json['fields']['bodyText']
+    # TODO Utilise top image
+    return (article.text, article.top_image)
+
+
+# get_singapore_article()
