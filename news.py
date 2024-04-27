@@ -1,4 +1,5 @@
 import os
+import uuid
 from dotenv import load_dotenv
 import requests
 from newspaper import Article
@@ -9,7 +10,7 @@ load_dotenv("./.env")
 SG_NEWS_API_KEY = os.getenv("SG_NEWS_API_KEY")
 
 
-def get_singapore_article() -> Tuple[str, str]:
+def get_singapore_article(path: str) -> Tuple[str, str]:
     """
     Fetches the first article from the top headlines in Singapore.
 
@@ -30,8 +31,14 @@ def get_singapore_article() -> Tuple[str, str]:
     article.download()
     article.parse()
 
+    # Download top image to temp dir
+    img_data = requests.get(article.top_image).content
+    img_path = f"{path}/{uuid.uuid4()}.jpg"
+    with open(img_path, 'wb') as img:
+        img.write(img_data)
+
     # TODO Utilise top image
-    return (article.text, article.top_image)
+    return (article.text, img_path)
 
 
 # get_singapore_article()

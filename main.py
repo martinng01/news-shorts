@@ -9,7 +9,7 @@ from captions import *
 TEMP_DIR = "./tmp"
 
 
-def generate_video(article: str, send_video_flag: bool = False):
+def generate_video(article: str, top_image: str, send_video_flag: bool = False):
     """
     This function generates a video from an article.
     It generates a script, search terms, voiceover, stock footage, and combines them into a video.
@@ -20,25 +20,21 @@ def generate_video(article: str, send_video_flag: bool = False):
     """
 
     # Generate script
-    print("Generating script...", end="")
     script = generate_script(article, 3)
-    print(" Done!")
+    print(f"Script: {script}")
 
     # Generate search terms
-    print("Generating search terms...", end="")
     search_terms = generate_search_terms(script, 6)
-    print(" Done!")
     print(f"Search terms: {search_terms}")
 
     # Generate voiceover
-    print("Generating voiceover...", end="")
     voiceover = tts("en_au_001", script, TEMP_DIR)
-    print(" Done!")
 
     # Generate captions
-    print("Generating captions...", end="")
     captions = generate_captions(voiceover, script, TEMP_DIR)
-    print(" Done!")
+
+    # Change top image into a video
+    image_video = image_to_video(top_image, 10)
 
     # Get stock footage for each search term
     video_paths = []
@@ -51,20 +47,17 @@ def generate_video(article: str, send_video_flag: bool = False):
         video_path = download_footage(stock_footage[0], TEMP_DIR)
         video_paths.append(video_path)
         print(" Done!")
-        print(video_path)
-        print()
 
     videos = [VideoFileClip(path) for path in video_paths]
+    videos = [image_video] + videos
     resized_videos = [resize_footage(video, (320, 480)) for video in videos]
 
-    print("Processing videos...", end="")
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     combined_video = burn_captions(
         combined_video, captions, fontsize=28, stroke_width=2)
     combined_video = change_video_speed(combined_video, 1)
-    print(" Done!")
 
     final_video_path = write_video(combined_video, TEMP_DIR)
 
@@ -76,6 +69,6 @@ def generate_video(article: str, send_video_flag: bool = False):
 
 
 if __name__ == "__main__":
-    article, _ = get_singapore_article()
+    article, top_image = get_singapore_article(TEMP_DIR)
 
-    generate_video(article, False)
+    generate_video(article, top_image, False)
