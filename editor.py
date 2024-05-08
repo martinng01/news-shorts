@@ -113,6 +113,8 @@ def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, strok
     Returns:
         VideoFileClip: The video with the captions burned in.
     """
+
+    # TODO: Change to bolder/wider font
     def generator(txt) -> TextClip:
         return TextClip(
             txt,
@@ -121,6 +123,8 @@ def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, strok
             color='white',
             stroke_color="black",
             stroke_width=stroke_width,  # type: ignore
+            method='caption',
+            size=(300, 200)
         )
 
     subtitles = SubtitlesClip(captions_path, generator)
@@ -142,7 +146,7 @@ def image_to_video(image_path: str, duration: int):
         VideoFileClip: The video created from the image.
     """
     image = ImageClip(image_path, duration=duration)
-    return zoom_in_effect(image, 0.04)
+    return zoom_in_effect(image, 0.02)
 
 
 # https://gist.github.com/mowshon/2a0664fab0ae799734594a5e91e518d5

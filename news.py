@@ -1,13 +1,22 @@
 import os
 import uuid
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
+from requests.adapters import HTTPAdapter
 from newspaper import Article
 from typing import Tuple
+
+from urllib3 import Retry
 
 load_dotenv("./.env")
 
 SG_NEWS_API_KEY = os.getenv("SG_NEWS_API_KEY")
+HEADERS = {
+    # Google Chrome user agent header
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+    'hl':  'en'
+}
 
 
 def get_singapore_article(path: str) -> Tuple[str, str]:
@@ -41,4 +50,74 @@ def get_singapore_article(path: str) -> Tuple[str, str]:
     return (article.text, img_path)
 
 
-# get_singapore_article()
+def get_cna_article(temp_dir: str):
+    # s = requests.Session()
+    # s.headers.update(HEADERS)
+    # retry = Retry(connect=3, backoff_factor=0.5)  # type: ignore
+    # adapter = HTTPAdapter(max_retries=retry)
+    # s.mount('http://', adapter)
+    # s.mount('https://', adapter)
+
+    # r = s.get("https://www.channelnewsasia.com/singapore")
+
+    def get_article_text_img(link: str):
+        text = ""
+        image_urls = []
+
+        r = requests.get(link)
+        soup = BeautifulSoup(r.text, 'lxml')
+        for article_div in soup.find_all("div", class_="content-wrapper"):
+            # Section for related articles -> ignore
+            if article_div.find("div", class_="referenced-card") is not None:
+                continue
+
+            # Section for social media -> ignore
+            if article_div.find("div", class_="social-media") is not None:
+                continue
+
+            # TODO: potential use in video
+            # Section for videos -> ignore
+            if article_div.find("div", class_="video") is not None:
+                continue
+
+            if article_div.find("p") is not None:
+                # Text Section
+                for p in article_div.find_all("p"):
+                    text += p.get_text()
+            elif article_div.find("img") is not None:
+                # Image Section
+                for img in article_div.find_all("img"):
+                    image_urls.append(img['src'])
+
+        return (text, image_urls)
+
+    articles = []
+
+    CNA_URL = "https://www.channelnewsasia.com/singapore"
+    CNA_BASE_URL = "https://www.channelnewsasia.com"
+
+    r = requests.get(CNA_URL)
+    soup = BeautifulSoup(r.text, 'lxml')
+    article_elements = soup.find_all(
+        "div", class_="top-stories-primary-section__item")
+    for article_element in article_elements:
+        anchor_element = article_element.find('a', class_='link')
+        href = anchor_element['href']
+        if '/commentary' in href:
+            continue
+        image_href = anchor_element.find('img', class_='image')['src']
+        articles.append((CNA_BASE_URL + href, image_href))
+
+    print(articles[0][0])
+    text, img_urls = get_article_text_img(articles[0][0])
+    img_urls.insert(0, articles[0][1])
+
+    img_paths = []
+    for img_url in img_urls:
+        img_data = requests.get(img_url).content
+        img_path = f"{temp_dir}/{uuid.uuid4()}.jpg"
+        img_paths.append(img_path)
+        with open(img_path, 'wb') as img_file:
+            img_file.write(img_data)
+
+    return (text, img_paths)

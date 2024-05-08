@@ -9,7 +9,7 @@ from captions import *
 TEMP_DIR = "./tmp"
 
 
-def generate_video(article: str, top_image: str, send_video_flag: bool = False):
+def generate_video(article: str, img_paths: List[str], send_video_flag: bool = False):
     """
     This function generates a video from an article.
     It generates a script, search terms, voiceover, stock footage, and combines them into a video.
@@ -28,14 +28,13 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
     print(f"Search terms: {search_terms}")
 
     # Generate voiceover
-    # voiceover = tts("en_au_001", script, TEMP_DIR)
     voiceover = tts(script, TEMP_DIR)
 
     # Generate captions
-    captions = generate_captions(voiceover, script, TEMP_DIR)
+    captions = generate_captions(voiceover, TEMP_DIR)
 
     # Change top image into a video
-    image_video = image_to_video(top_image, 10)
+    img_videos = [image_to_video(img_path, 5) for img_path in img_paths]
 
     # Get stock footage for each search term
     video_paths = []
@@ -50,14 +49,14 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
         print(" Done!")
 
     videos = [VideoFileClip(path) for path in video_paths]
-    videos = [image_video] + videos
+    videos = img_videos + videos
     resized_videos = [resize_footage(video, (320, 480)) for video in videos]
 
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     combined_video = burn_captions(
-        combined_video, captions, fontsize=18, stroke_width=1.5)
+        combined_video, captions, fontsize=22, stroke_width=1.5)
 
     final_video_path = write_video(combined_video, TEMP_DIR)
 
@@ -69,6 +68,7 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
 
 
 if __name__ == "__main__":
-    article, top_image = get_singapore_article(TEMP_DIR)
+    article, img_paths = get_cna_article(TEMP_DIR)
+    generate_video(article, img_paths)
 
     # generate_video(article, top_image, False)
