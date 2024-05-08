@@ -68,7 +68,8 @@ def generate_video(article: str, img_paths: List[str], send_video_flag: bool = F
 
 
 if __name__ == "__main__":
-    article, img_paths = get_cna_article(TEMP_DIR)
+    article, img_paths = get_cna_article(
+        TEMP_DIR, target_url="")
     generate_video(article, img_paths)
 
     # generate_video(article, top_image, False)
