@@ -84,20 +84,20 @@ def generate_search_terms(script: str, num_terms: int) -> List[str]:
 
     prompt = f"""
     Generate {num_terms} search terms for stock videos,
-    depending on the script of the video below.
+    depending on the article below.
+
+    Each search term must be a geographical location mentioned in the script.
 
     The search terms are to be returned as
     a JSON-Array of strings.
 
-    Each search term must only be one word long,
-    always add the main subject of the video.
+    Each search term must only be one word long.
     
     YOU MUST ONLY RETURN THE JSON-ARRAY OF STRINGS.
     YOU MUST NOT RETURN ANYTHING ELSE. 
     YOU MUST NOT RETURN THE SCRIPT.
     DO NOT INCLUDE NAMES IN THE KEYWORDS.
     
-    The search terms must be related to the subject of the video.
     Here is an example of a JSON-Array of strings:
     ["search term 1", "search term 2", "search term 3"]
 

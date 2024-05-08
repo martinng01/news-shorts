@@ -21,12 +21,13 @@ def get_singapore_article(path: str) -> Tuple[str, str]:
     news_outlets = ["The Straits Times", "CNA", "TODAY"]
 
     response = requests.get("https://newsapi.org/v2/top-headlines", params={
-        "country": "sg", "apiKey": SG_NEWS_API_KEY})
+        "country": "sg", "category": "general", "apiKey": SG_NEWS_API_KEY})
 
     json = response.json()
 
     articles = list(
         filter(lambda article: article["author"] in news_outlets, json["articles"]))
+    print(articles[0]['url'])
     article = Article(url=articles[0]['url'])
     article.download()
     article.parse()
@@ -37,7 +38,6 @@ def get_singapore_article(path: str) -> Tuple[str, str]:
     with open(img_path, 'wb') as img:
         img.write(img_data)
 
-    # TODO Utilise top image
     return (article.text, img_path)
 
 

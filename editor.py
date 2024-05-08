@@ -68,7 +68,7 @@ def add_audio(video: VideoFileClip, audio: AudioFileClip) -> VideoFileClip:
     return video.set_audio(audio)
 
 
-def write_video(video: VideoFileClip, path: str) -> str:
+def write_video(video: VideoFileClip | CompositeVideoClip, path: str) -> str:
     """
     Writes a video to a file.
 
@@ -102,7 +102,7 @@ def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) 
     return speedx(video, speed)
 
 
-def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, stroke_width: int) -> CompositeVideoClip:
+def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, stroke_width: float) -> CompositeVideoClip:
     """
     Burns captions into a video.
 
@@ -120,7 +120,7 @@ def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, strok
             fontsize=fontsize,
             color='white',
             stroke_color="black",
-            stroke_width=stroke_width,
+            stroke_width=stroke_width,  # type: ignore
         )
 
     subtitles = SubtitlesClip(captions_path, generator)
@@ -142,10 +142,10 @@ def image_to_video(image_path: str, duration: int):
         VideoFileClip: The video created from the image.
     """
     image = ImageClip(image_path, duration=duration)
-    # resize(image, lambda t: 1 + 0.2 * t)
     return zoom_in_effect(image, 0.04)
 
 
+# https://gist.github.com/mowshon/2a0664fab0ae799734594a5e91e518d5
 def zoom_in_effect(clip, zoom_ratio=0.04):
     def effect(get_frame, t):
         img = Image.fromarray(get_frame(t))

@@ -1,13 +1,15 @@
 # credit: https://github.com/oscie57/tiktok-voice
 
+import json
 import re
 from typing import List, Tuple
 import uuid
 from dotenv import load_dotenv
 import requests
-import base64
 import os
-
+import google.auth
+from google.cloud import texttospeech
+from moviepy.editor import CompositeAudioClip, AudioFileClip, concatenate_audioclips
 VOICES = [
     # DISNEY VOICES
     "en_us_ghostface",  # Ghost Face
@@ -64,32 +66,54 @@ load_dotenv("./.env")
 API_BASE_URL = f"https://api16-normal-v6.tiktokv.com/media/api/text/speech/invoke/"
 USER_AGENT = f"com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)"
 TIKTOK_SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
-TIKTOK_API_CHAR_LIMIT = 250
+TIKTOK_API_CHAR_LIMIT = 200
+
+credentials, project = google.auth.default()
 
 
-def tts(text_speaker: str = "en_us_002", req_text: str = "TikTok Text To Speech",
-        directory: str = './tmp'):
-
-    video_id = uuid.uuid4()
-    video_path = f"{directory}/{video_id}.mp4"
-
+def tts(req_text: str, directory: str = './tmp'):
     split_text = split_string(req_text, TIKTOK_API_CHAR_LIMIT)
 
-    b64d_arr = []
+    audio_paths = []
     for text in split_text:
-        vstr, scode = generate_audio(text_speaker, text)
-        if (scode != 0):
-            print(f"Error generating text audio, Status Code: {scode}")
+        audio = generate_audio_gcp(text)
+        audio_path = f"{directory}/{uuid.uuid4()}.mp3"
+        audio_paths.append(audio_path)
+        with open(audio_path, "wb") as out:
+            out.write(audio)
 
-        b64d = base64.b64decode(vstr)
+    audioclips = [AudioFileClip(path) for path in audio_paths]
+    combined_audioclip = concatenate_audioclips(audioclips)
+    combined_audio_path = f"{directory}/{uuid.uuid4()}.mp3"
 
-        b64d_arr.append(b64d)
+    combined_audioclip.write_audiofile(combined_audio_path)
 
-    with open(video_path, "wb") as out:
-        for b64d in b64d_arr:
-            out.write(b64d)
+    return combined_audio_path
 
-    return video_path
+
+def generate_audio_gcp(text: str):
+    client = texttospeech.TextToSpeechClient()
+
+    input_text = texttospeech.SynthesisInput(text=text)
+
+    # Note: the voice can also be specified by name.
+    # Names of voices can be retrieved with client.list_voices().
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="en-US",
+        name="en-US-Studio-O",
+    )
+
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+        speaking_rate=1.35
+    )
+
+    response = client.synthesize_speech(
+        request={"input": input_text, "voice": voice,
+                 "audio_config": audio_config}
+    )
+
+    return response.audio_content
 
 
 def generate_audio(text_speaker: str = "en_us_002", req_text: str = "TikTok Text To Speech",) -> Tuple[str, int]:
@@ -178,15 +202,3 @@ def split_string(string: str, n: int) -> List[str]:
     print(result)
 
     return result
-
-
-def sampler():
-    """
-    Generate a sample of the voices.
-    """
-    for item in VOICES:
-        text_speaker = item
-        filename = item
-        print(item)
-        req_text = 'Tiktok Text to Speech Test'
-        tts(text_speaker, req_text, filename)

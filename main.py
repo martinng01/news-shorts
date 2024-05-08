@@ -24,11 +24,12 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
     print(f"Script: {script}")
 
     # Generate search terms
-    search_terms = generate_search_terms(script, 6)
+    search_terms = generate_search_terms(article, 3)
     print(f"Search terms: {search_terms}")
 
     # Generate voiceover
-    voiceover = tts("en_au_001", script, TEMP_DIR)
+    # voiceover = tts("en_au_001", script, TEMP_DIR)
+    voiceover = tts(script, TEMP_DIR)
 
     # Generate captions
     captions = generate_captions(voiceover, script, TEMP_DIR)
@@ -40,7 +41,7 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
     video_paths = []
     for search_term in search_terms:
         print(f"Getting footage for search term {search_term}...", end="")
-        stock_footage = get_stock_footage(search_term, 1, 5)
+        stock_footage = get_stock_footage(search_term, 2, 5)
         if stock_footage is None or stock_footage == []:
             print(" No footage found.")
             continue
@@ -56,8 +57,7 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
         resized_videos, AudioFileClip(voiceover).duration)
     combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     combined_video = burn_captions(
-        combined_video, captions, fontsize=28, stroke_width=2)
-    combined_video = change_video_speed(combined_video, 1)
+        combined_video, captions, fontsize=18, stroke_width=1.5)
 
     final_video_path = write_video(combined_video, TEMP_DIR)
 
@@ -71,4 +71,4 @@ def generate_video(article: str, top_image: str, send_video_flag: bool = False):
 if __name__ == "__main__":
     article, top_image = get_singapore_article(TEMP_DIR)
 
-    generate_video(article, top_image, False)
+    # generate_video(article, top_image, False)
