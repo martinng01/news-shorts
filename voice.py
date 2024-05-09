@@ -1,6 +1,5 @@
 # credit: https://github.com/oscie57/tiktok-voice
 
-import json
 import re
 import subprocess
 from typing import List, Tuple
@@ -10,7 +9,6 @@ import requests
 import os
 import google.auth
 from google.cloud import texttospeech
-from moviepy.editor import CompositeAudioClip, AudioFileClip, concatenate_audioclips
 VOICES = [
     # DISNEY VOICES
     "en_us_ghostface",  # Ghost Face

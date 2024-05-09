@@ -7,10 +7,8 @@ from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, ImageCli
 from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
-from moviepy.video.fx.speedx import speedx
 from PIL import Image
 import numpy
-import moviepy.editor as mp
 
 
 def resize_footage(video, dimensions: Tuple[int, int]) -> VideoFileClip:

@@ -1,15 +1,19 @@
-from footage import *
-from gpt import *
-from voice import *
-from editor import *
-from bot import *
-from news import *
-from captions import *
+from typing import List
+from bot import send_video
+from editor import image_to_video, resize_footage, combine_footage, burn_captions, write_video
+from voice import tts
+from news import get_cna_article
+from footage import get_stock_footage, download_footage
+from captions import generate_captions
+from gpt import generate_script, generate_search_terms
+from moviepy.editor import VideoFileClip, AudioFileClip
+import os
+
 
 TEMP_DIR = "tmp"
 
 
-def generate_video(article: str, img_paths: List[str], send_video_flag: bool = False):
+def generate_video(article: str, img_paths: List[str]):
     """
     This function generates a video from an article.
     It generates a script, search terms, voiceover, stock footage, and combines them into a video.
@@ -65,18 +69,21 @@ def generate_video(article: str, img_paths: List[str], send_video_flag: bool = F
     combined_video = write_video(
         combined_video, voiceover, TEMP_DIR)
 
-    # Send video
-    if send_video_flag:
-        print("Sending video...", end="")
-        send_video(combined_video)
-        print(" Done!")
-
     # Cleanup tmp files
     for path in temp_paths:
         os.remove(path)
 
+    return combined_video
+
 
 if __name__ == "__main__":
-    article, img_paths = get_cna_article(
+    article_dict = get_cna_article(
         TEMP_DIR, target_url="")
-    generate_video(article, img_paths, False)
+    print(article_dict['title'])
+    video_path = generate_video(
+        article_dict['text'], article_dict['img_paths'])
+
+    send_video(video_path=video_path,
+               link=article_dict['link'],
+               title=article_dict['title'],
+               desc=article_dict['desc'])
