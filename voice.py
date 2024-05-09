@@ -2,6 +2,7 @@
 
 import json
 import re
+import subprocess
 from typing import List, Tuple
 import uuid
 from dotenv import load_dotenv
@@ -74,19 +75,27 @@ credentials, project = google.auth.default()
 def tts(req_text: str, directory: str = './tmp'):
     split_text = split_string(req_text, TIKTOK_API_CHAR_LIMIT)
 
-    audio_paths = []
+    audio_filenames = []
     for text in split_text:
         audio = generate_audio_gcp(text)
-        audio_path = f"{directory}/{uuid.uuid4()}.mp3"
-        audio_paths.append(audio_path)
-        with open(audio_path, "wb") as out:
+        audio_filename = f"{uuid.uuid4()}.mp3"
+        audio_filenames.append(audio_filename)
+
+        with open(os.path.join(directory, audio_filename), "wb") as out:
             out.write(audio)
 
-    audioclips = [AudioFileClip(path) for path in audio_paths]
-    combined_audioclip = concatenate_audioclips(audioclips)
-    combined_audio_path = f"{directory}/{uuid.uuid4()}.mp3"
+    tmp_file_path = f"{directory}/{uuid.uuid4()}.txt"
+    with open(tmp_file_path, "w") as file:
+        for filename in audio_filenames:
+            file.write(f"file '{filename}'\n")
 
-    combined_audioclip.write_audiofile(combined_audio_path)
+    combined_audio_path = f"{directory}/{uuid.uuid4()}.mp3"
+    subprocess.run(
+        ["ffmpeg", "-f", "concat", "-i", tmp_file_path, combined_audio_path])
+
+    for audio_filename in audio_filenames:
+        os.remove(os.path.join(directory, audio_filename))
+    os.remove(tmp_file_path)
 
     return combined_audio_path
 

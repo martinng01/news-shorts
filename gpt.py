@@ -86,7 +86,7 @@ def generate_search_terms(script: str, num_terms: int) -> List[str]:
     Generate {num_terms} search terms for stock videos,
     depending on the article below.
 
-    Each search term must be a geographical location mentioned in the script.
+    Each search term must be a geographical location mentioned in the script and a commonly known location.
 
     The search terms are to be returned as
     a JSON-Array of strings.

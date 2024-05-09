@@ -1,7 +1,9 @@
 import math
+import os
+import subprocess
 from typing import List, Tuple, cast
 import uuid
-from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, ImageClip, concatenate_videoclips
+from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, ImageClip, concatenate_videoclips
 from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
@@ -53,7 +55,7 @@ def combine_footage(videos: List[VideoFileClip], max_duration: int) -> VideoFile
     return cast(VideoFileClip, concatenate_videoclips(trimmed_videos, method="compose"))
 
 
-def add_audio(video: VideoFileClip, audio: AudioFileClip) -> VideoFileClip:
+def add_audio(video_path: str, audio_path: str, tmp_path: str):
     """
     Adds audio to a video.
 
@@ -65,10 +67,15 @@ def add_audio(video: VideoFileClip, audio: AudioFileClip) -> VideoFileClip:
         VideoFileClip: The video with the audio added.
     """
 
-    return video.set_audio(audio)
+    output_path = os.path.join(tmp_path, f"{uuid.uuid4()}.mp4")
+
+    subprocess.run(["ffmpeg", "-i", video_path, "-i", audio_path,
+                   "-map", "0", "-map", "1:a", "-shortest", output_path])
+
+    return output_path
 
 
-def write_video(video: VideoFileClip | CompositeVideoClip, path: str) -> str:
+def write_video(video: VideoFileClip | CompositeVideoClip, audio: str, path: str) -> str:
     """
     Writes a video to a file.
 
@@ -81,25 +88,9 @@ def write_video(video: VideoFileClip | CompositeVideoClip, path: str) -> str:
     """
     video_id = uuid.uuid4()
     video_path = f"{path}/{video_id}.mp4"
-    video.write_videofile(video_path, codec="libx264")
+    video.write_videofile(video_path, audio=audio, codec="libx264")
 
     return video_path
-
-# TODO Make changing video speed not change audio pitch
-
-
-def change_video_speed(video: VideoFileClip | CompositeVideoClip, speed: float) -> VideoFileClip:
-    """
-    Changes the speed of the audio in a video.
-
-    Args:
-        video (VideoFileClip): The video to change the audio speed of.
-        speed (float): The speed to change the audio to.
-
-    Returns:
-        VideoFileClip: The video with the audio speed changed.
-    """
-    return speedx(video, speed)
 
 
 def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, stroke_width: float) -> CompositeVideoClip:
@@ -114,12 +105,12 @@ def burn_captions(video: VideoFileClip, captions_path: str, fontsize: int, strok
         VideoFileClip: The video with the captions burned in.
     """
 
-    # TODO: Change to bolder/wider font
     def generator(txt) -> TextClip:
         return TextClip(
             txt,
             font="fonts/bold_font.ttf",
             fontsize=fontsize,
+            kerning=1,
             color='white',
             stroke_color="black",
             stroke_width=stroke_width,  # type: ignore

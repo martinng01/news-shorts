@@ -83,7 +83,10 @@ def get_cna_article(temp_dir: str, target_url: str = ""):
             if article_div.find("div", class_="social-media") is not None:
                 continue
 
-            # TODO: potential use in video
+            # Section for social media -> ignore
+            if article_div.find("div", class_="embed") is not None:
+                continue
+
             # Section for videos -> ignore
             if article_div.find("div", class_="video") is not None:
                 continue

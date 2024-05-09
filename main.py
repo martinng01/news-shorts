@@ -6,7 +6,7 @@ from bot import *
 from news import *
 from captions import *
 
-TEMP_DIR = "./tmp"
+TEMP_DIR = "tmp"
 
 
 def generate_video(article: str, img_paths: List[str], send_video_flag: bool = False):
@@ -19,21 +19,26 @@ def generate_video(article: str, img_paths: List[str], send_video_flag: bool = F
         article (str): The article to generate the video from.
     """
 
+    temp_paths = []
+
     # Generate script
     script = generate_script(article, 3)
     print(f"Script: {script}")
 
     # Generate search terms
-    search_terms = generate_search_terms(article, 3)
+    search_terms = generate_search_terms(script, 3)
     print(f"Search terms: {search_terms}")
 
     # Generate voiceover
     voiceover = tts(script, TEMP_DIR)
+    temp_paths.append(voiceover)
 
     # Generate captions
     captions = generate_captions(voiceover, TEMP_DIR)
+    temp_paths.append(captions)
 
     # Change top image into a video
+    temp_paths.extend(img_paths)
     img_videos = [image_to_video(img_path, 5) for img_path in img_paths]
 
     # Get stock footage for each search term
@@ -48,28 +53,30 @@ def generate_video(article: str, img_paths: List[str], send_video_flag: bool = F
         video_paths.append(video_path)
         print(" Done!")
 
+    temp_paths.extend(video_paths)
     videos = [VideoFileClip(path) for path in video_paths]
     videos = img_videos + videos
     resized_videos = [resize_footage(video, (320, 480)) for video in videos]
 
     combined_video = combine_footage(
         resized_videos, AudioFileClip(voiceover).duration)
-    combined_video = add_audio(combined_video, AudioFileClip(voiceover))
     combined_video = burn_captions(
         combined_video, captions, fontsize=22, stroke_width=1.5)
-
-    final_video_path = write_video(combined_video, TEMP_DIR)
+    combined_video = write_video(
+        combined_video, voiceover, TEMP_DIR)
 
     # Send video
     if send_video_flag:
         print("Sending video...", end="")
-        send_video(final_video_path)
+        send_video(combined_video)
         print(" Done!")
+
+    # Cleanup tmp files
+    for path in temp_paths:
+        os.remove(path)
 
 
 if __name__ == "__main__":
     article, img_paths = get_cna_article(
         TEMP_DIR, target_url="")
-    generate_video(article, img_paths)
-
-    # generate_video(article, top_image, False)
+    generate_video(article, img_paths, False)
