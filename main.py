@@ -39,7 +39,7 @@ def generate_video(article: str, img_paths: List[str]):
 
     # Generate captions
     captions = generate_captions_aws(voiceover, TEMP_DIR)
-    # temp_paths.append(captions)
+    temp_paths.append(captions)
 
     # Change top image into a video
     temp_paths.extend(img_paths)

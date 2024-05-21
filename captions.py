@@ -50,4 +50,7 @@ def generate_captions_aws(audio_path: str, tmp_path: str):
     srt_equalizer.equalize_srt_file(
         output_path, output_path, CHARS_PER_LINE, method='halving')
 
+    subprocess.run(["aws", "s3", "rm",
+                   f"s3://{BUCKET}/newsshorts/{os.path.basename(audio_path)}"])
+
     return output_path
