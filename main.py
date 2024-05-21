@@ -4,7 +4,7 @@ from editor import image_to_video, resize_footage, combine_footage, burn_caption
 from voice import generate_audio_aws
 from news import get_cna_article
 from footage import get_stock_footage, download_footage
-from captions import generate_captions
+from captions import generate_captions_aws
 from gpt import generate_script, generate_search_terms
 from moviepy.editor import VideoFileClip, AudioFileClip
 import os
@@ -38,8 +38,8 @@ def generate_video(article: str, img_paths: List[str]):
     temp_paths.append(voiceover)
 
     # Generate captions
-    captions = generate_captions(voiceover, TEMP_DIR)
-    temp_paths.append(captions)
+    captions = generate_captions_aws(voiceover, TEMP_DIR)
+    # temp_paths.append(captions)
 
     # Change top image into a video
     temp_paths.extend(img_paths)
@@ -63,7 +63,7 @@ def generate_video(article: str, img_paths: List[str]):
     resized_videos = [resize_footage(video, (320, 480)) for video in videos]
 
     combined_video = combine_footage(
-        resized_videos, AudioFileClip(voiceover).duration)
+        resized_videos, AudioFileClip(voiceover).duration + 0.5)  # Add 0.5s for buffer
     combined_video = burn_captions(
         combined_video, captions, fontsize=22, stroke_width=1.5)
     combined_video = write_video(
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     video_path = generate_video(
         article_dict['text'], article_dict['img_paths'])
 
-    send_video(video_path=video_path,
-               link=article_dict['link'],
-               title=article_dict['title'],
-               desc=article_dict['desc'])
+    # send_video(video_path=video_path,
+    #            link=article_dict['link'],
+    #            title=article_dict['title'],
+    #            desc=article_dict['desc'])

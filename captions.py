@@ -1,33 +1,53 @@
 import os
+import subprocess
+import time
 import uuid
-import assemblyai as aai
-from dotenv import load_dotenv
+import boto3
+import requests
+from srt_equalizer import srt_equalizer
 
-load_dotenv("./.env")
+CHARS_PER_LINE = 40
 
-ASSEMBLY_AI_API_KEY = os.getenv("ASSEMBLY_AI_API_KEY")
-CHARS_PER_LINE = 30
+BUCKET = "martinngs-bucket"
 
 
-def generate_captions(audio_path: str, tmp_path: str) -> str:
-    """
-    Generates captions for an audio file.
+def generate_captions_aws(audio_path: str, tmp_path: str):
+    subprocess.run(["aws", "s3", "cp", audio_path,
+                   f"s3://{BUCKET}/newsshorts/"])
 
-    Args:
-        audio_path (str): The path to the audio file.
-        path (str): The path to save the captions to.
+    transcribe = boto3.client('transcribe')
+    jobname = os.path.basename(audio_path)
 
-    Returns:
-        str: The path to the generated captions.
-    """
-    subs_path = os.path.join(tmp_path, f"{uuid.uuid4()}.srt")
+    response = transcribe.start_transcription_job(
+        TranscriptionJobName=jobname,
+        LanguageCode='en-US',
+        MediaFormat='mp3',
+        Media={
+            'MediaFileUri': "s3://martinngs-bucket/newsshorts/" + os.path.basename(audio_path)
+        },
+        Subtitles={
+            'Formats': [
+                'srt',
+            ],
+            'OutputStartIndex': 0
+        },
+    )
 
-    aai.settings.api_key = ASSEMBLY_AI_API_KEY
+    while (response['TranscriptionJob']['TranscriptionJobStatus'] == 'IN_PROGRESS'):
+        time.sleep(1)
+        response = transcribe.get_transcription_job(
+            TranscriptionJobName=jobname)
 
-    transcript = aai.Transcriber().transcribe(data=audio_path)
-    subtitles = transcript.export_subtitles_srt(chars_per_caption=40)
+    result = requests.get(
+        response['TranscriptionJob']['Subtitles']['SubtitleFileUris'][0])
 
-    with open(subs_path, 'w') as file:
-        file.write(subtitles)
+    output_path = os.path.join(tmp_path, f"{uuid.uuid4()}.srt")
 
-    return subs_path
+    with open(output_path, 'w') as file:
+        # SRT files require two empty lines at the end
+        file.write(result.text + "\n\n")
+
+    srt_equalizer.equalize_srt_file(
+        output_path, output_path, CHARS_PER_LINE, method='halving')
+
+    return output_path
