@@ -9,7 +9,7 @@ ASSEMBLY_AI_API_KEY = os.getenv("ASSEMBLY_AI_API_KEY")
 CHARS_PER_LINE = 30
 
 
-def generate_captions(audio_path: str, path: str) -> str:
+def generate_captions(audio_path: str, tmp_path: str) -> str:
     """
     Generates captions for an audio file.
 
@@ -20,9 +20,7 @@ def generate_captions(audio_path: str, path: str) -> str:
     Returns:
         str: The path to the generated captions.
     """
-
-    subs_id = uuid.uuid4()
-    subs_path = f"{path}/{subs_id}.srt"
+    subs_path = os.path.join(tmp_path, f"{uuid.uuid4()}.srt")
 
     aai.settings.api_key = ASSEMBLY_AI_API_KEY
 

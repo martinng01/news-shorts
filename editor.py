@@ -73,7 +73,7 @@ def add_audio(video_path: str, audio_path: str, tmp_path: str):
     return output_path
 
 
-def write_video(video: VideoFileClip | CompositeVideoClip, audio: str, path: str) -> str:
+def write_video(video, audio: str, path: str) -> str:
     """
     Writes a video to a file.
 
@@ -84,8 +84,7 @@ def write_video(video: VideoFileClip | CompositeVideoClip, audio: str, path: str
     Returns:
         str: The path to the written video.
     """
-    video_id = uuid.uuid4()
-    video_path = f"{path}/{video_id}.mp4"
+    video_path = os.path.join(path, f"{uuid.uuid4()}.mp4")
     video.write_videofile(video_path, audio=audio, codec="libx264")
 
     return video_path

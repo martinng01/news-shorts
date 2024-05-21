@@ -11,7 +11,7 @@ load_dotenv("./.env")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 
 
-def get_stock_footage(query: str, num_videos: int, min_dur: int) -> List[str] | None:
+def get_stock_footage(query: str, num_videos: int, min_dur: int):
     """
     Searches for stock videos based on a query.
 
@@ -53,7 +53,7 @@ def get_stock_footage(query: str, num_videos: int, min_dur: int) -> List[str] | 
     return video_urls
 
 
-def download_footage(video_url: str, directory: str = "./tmp") -> str:
+def download_footage(video_url: str, tmp_path: str) -> str:
     """
     Saves a video from a given URL and returns the path to the video.
 
@@ -64,8 +64,7 @@ def download_footage(video_url: str, directory: str = "./tmp") -> str:
     Returns:
         str: The path to the saved video.
     """
-    video_id = uuid.uuid4()
-    video_path = f"{directory}/{video_id}.mp4"
+    video_path = os.path.join(tmp_path, f"{uuid.uuid4()}.mp4")
     with open(video_path, "wb") as f:
         f.write(requests.get(video_url).content)
 

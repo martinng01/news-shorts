@@ -1,7 +1,7 @@
 from typing import List
 from bot import send_video
 from editor import image_to_video, resize_footage, combine_footage, burn_captions, write_video
-from voice import tts
+from voice import generate_audio_aws
 from news import get_cna_article
 from footage import get_stock_footage, download_footage
 from captions import generate_captions
@@ -34,7 +34,7 @@ def generate_video(article: str, img_paths: List[str]):
     print(f"Search terms: {search_terms}")
 
     # Generate voiceover
-    voiceover = tts(script, TEMP_DIR)
+    voiceover = generate_audio_aws(script, TEMP_DIR)
     temp_paths.append(voiceover)
 
     # Generate captions

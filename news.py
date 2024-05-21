@@ -6,23 +6,8 @@ import requests
 
 load_dotenv("./.env")
 
-HEADERS = {
-    # Google Chrome user agent header
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-    'hl':  'en'
-}
-
 
 def get_cna_article(temp_dir: str, target_url: str = ""):
-    # s = requests.Session()
-    # s.headers.update(HEADERS)
-    # retry = Retry(connect=3, backoff_factor=0.5)  # type: ignore
-    # adapter = HTTPAdapter(max_retries=retry)
-    # s.mount('http://', adapter)
-    # s.mount('https://', adapter)
-
-    # r = s.get("https://www.channelnewsasia.com/singapore")
-
     print(target_url)
 
     def get_article_text_img(link: str):
@@ -106,7 +91,7 @@ def get_cna_article(temp_dir: str, target_url: str = ""):
     img_paths = []
     for img_url in img_urls:
         img_data = requests.get(img_url).content
-        img_path = f"{temp_dir}/{uuid.uuid4()}.jpg"
+        img_path = os.path.join(temp_dir, f"{uuid.uuid4()}.jpg")
         img_paths.append(img_path)
         with open(img_path, 'wb') as img_file:
             img_file.write(img_data)
