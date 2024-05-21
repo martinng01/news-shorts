@@ -10,7 +10,11 @@ def generate_audio_aws(text: str, tmp_path: str):
 
     try:
         response = polly.synthesize_speech(
-            Engine="neural", OutputFormat="mp3", Text=text, VoiceId="Danielle"
+            Engine="neural",
+            OutputFormat="mp3",
+            Text=f'<speak><prosody rate="fast">{text}</prosody></speak>',
+            TextType='ssml',
+            VoiceId="Danielle"
         )
     except Exception as e:
         print(e)
